@@ -1,8 +1,5 @@
 #Blender Batch Render + GUI
 
-This is a simple script that I've developed the past year.
-I had to model and render 400 pack-shots, so I was modeling during the day and run the script overnight.
-
 I must make clear that I'm not much of a programmer and maybe you'll find some sloppy code here,
 I'm sure it can be optimized so if you find any mistakes or you have any suggestions please point them out.
 
