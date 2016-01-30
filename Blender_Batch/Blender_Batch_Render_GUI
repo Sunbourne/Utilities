@@ -1,0 +1,91 @@
+#!/bin/bash
+
+#time the script started
+startTime=$(date +%s)
+ 
+#sets the path for the render executable
+executable=$(zenity --file-selection --title="Select Blender Executable")
+
+#sets the location of the blender files to be rendered
+path=$(zenity --file-selection --directory --title="Select Folder to be Rendered")
+
+#sets where the files should be saved
+savfolder=$(zenity --file-selection --directory --save --title="Select Folder where the renders should be saved" --confirm-overwrite)
+
+#sets the file extension for the resulting image
+imgtype=$(zenity --list --title "Image Format" --radiolist  --column="Pick" --column="Extension" TRUE "PNG" FALSE "EXR" FALSE "TGA" FALSE "BMP");
+
+#sets the action to be taken after finishing the rendering job
+pmng=$(zenity --list --title "After rendering is finished :" --radiolist  --column="Pick" --column="Action"  TRUE "Do Nothing" FALSE "Put to sleep" FALSE "Shutdown");
+
+sets a variable to choose animation or single frame
+anm=$(zenity --list --title "Single frame or Animation :" --radiolist  --column="Pick" --column="Action"  TRUE "Single frame" FALSE "Animation");
+
+
+if [[ $anm == *"Animation"* ]]
+then
+	rndtype="-a";
+else	
+	rndtype="-f 1";
+fi
+
+if [[ $pmng != "Do Nothing" ]]
+then
+#stores the super user password in a variable for later use
+pass=$(zenity --password --title "Super User Password")
+fi
+
+cd $path
+
+f=$(ls *.blend | wc -l)
+x=($(ls *.blend))
+
+
+if (for((i=0; i<$f; i++));do
+    echo "# ${x[i]} \n\ $((i+1)) of $f" 
+    g=${x[i]}    
+    $executable -b $g -o $savfolder/$g -F $imgtype -x 1 $rndtype
+    echo "$(( ((i+1) * 100) / f ))"
+    sleep 0.1
+    done | zenity --progress --title="Rendering" --percentage=0 --auto-close --auto-kill)
+then
+    zenity --notification   --timeout=2 --window-icon="info" --text="Renders completed successfully!"&
+    play ~/Path/to/Sound/Library/sucess.wav
+else
+    zenity --notification  --timeout=2 --window-icon="error" --text "Something went wrong!"&
+    play ~/Path/to/Sound/Library/error.wav
+fi
+
+#Rename files by removing the ".blend####" extension
+cd $savfolder
+imgtype=${imgtype,,}
+for i in *.$imgtype;do mv $i ${i//.\blend/_};done;
+
+#Actions after finishing the rendering job
+if [[ $pmng == "Do Nothing" ]]
+then
+    break
+elif [[ $pmng == "Put to sleep" ]]
+then
+    zenity --info  --window-icon="error" --timeout=2  --text="Going to Sleep! Zzzzzz!"
+    echo $pass | sudo -S pm-suspend
+else
+    zenity --info  --window-icon="error" --timeout=2  --text="Shutting Down"
+    echo $pass | sudo -S halt -p   
+fi
+
+#end time of script and total time
+endTime=$(date +%s)
+totalTime=$(($endTime - $startTime))
+timeInfo=$(date -u -d @$totalTime +%T)
+zenity --notification --timeout=2 --window-icon="info" --text="Total time of Render Jobs: $timeInfo"
+
+#Create a log file
+date +%A" "%d" "%B%n%H:%M:%S > Statistics.txt
+echo "">> Statistics.txt
+echo "Rendered: $(ls *.$imgtype | wc -l) frames of $(ls $path | grep blend$ | wc -l) blend files" >> Statistics.txt
+echo "">> Statistics.txt
+echo "Total Render Time: $timeInfo" >> Statistics.txt
+echo "">> Statistics.txt
+echo "Image List:">> Statistics.txt
+echo "$(ls *.$imgtype)">> Statistics.txt
