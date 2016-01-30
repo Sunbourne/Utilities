@@ -1,0 +1,20 @@
+#!/bin/bash 
+
+#a script that automaticaly (or semi-autoamtically) downloads Blender night builds.
+
+#Originally is tested and works under Linux Mint 17.1 X 64
+#with slight modifications it can work for you.
+
+#Goes to the Blender Buildbot and downloads the proper package in your "Downloads" directory.
+wget -P ~/Downloads/  -r --no-parent -A 'blender*linux-glibc211-x86_64.tar.bz2' https://builder.blender.org/download/
+
+#Extracts the downloaded package in a specified location
+#You must create this directory yourself if it doesn't exist
+tar -xvjf ~/Downloads/builder.blender.org/download/blender-*-x86_64.tar.bz2 --strip 1 -C ~/Programs/Blender/Latest_Build/
+
+#Removes the downloaded files
+rm -r  ~/Downloads/builder.blender.org/
+
+#Displays a message
+zenity --notification   --timeout=2 --display=:0.0 --window-icon="info" --text="Latest Blender Build downloaded and installed sucessfully!"
+
