@@ -30,8 +30,5 @@ Before running the script you must prepare you files accordingly (eg. select you
 
 The script can also be modified to play a sounds on render finish or in render error, so you can leave the room.
 
-I'm planning also to implement an SMS functionality so you can leave the office/house and be notified if something went wrong or everything run well.
 
-On the other hand maybe I could use this script as an excuse to learn python and re-write it over again.
-I hope it will be helpful for you as it was for me.
 
