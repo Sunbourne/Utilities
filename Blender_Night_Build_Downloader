@@ -6,7 +6,7 @@
 #with slight modifications it can work for you.
 
 #Goes to the Blender Buildbot and downloads the proper package in your "Downloads" directory.
-wget -P ~/Downloads/  -r --no-parent -A 'blender*linux-glibc211-x86_64.tar.bz2' https://builder.blender.org/download/
+wget -P ~/Downloads/  -r --no-parent -A 'blender*linux-glibc*-x86_64.tar.bz2' https://builder.blender.org/download/
 
 #Extracts the downloaded package in a specified location
 #You must create this directory yourself if it doesn't exist
