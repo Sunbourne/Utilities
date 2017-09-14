@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/bash -xv
 
 #time the script started
 startTime=$(date +%s)
- 
+
 #sets the path for the render executable
 executable=$(zenity --file-selection --title="Select Blender Executable")
 
@@ -13,19 +13,19 @@ path=$(zenity --file-selection --directory --title="Select Folder to be Rendered
 savfolder=$(zenity --file-selection --directory --save --title="Select Folder where the renders should be saved" --confirm-overwrite)
 
 #sets the file extension for the resulting image
-imgtype=$(zenity --list --title "Image Format" --radiolist  --column="Pick" --column="Extension" TRUE "PNG" FALSE "EXR" FALSE "TGA" FALSE "BMP");
+imgtype=$(zenity --list --title "Image Format" --radiolist  --column="Pick" --column="Extension" TRUE "PNG" FALSE "EXR" FALSE "TIFF" FALSE "TGA" FALSE "JPG" FALSE "BMP");
 
 #sets the action to be taken after finishing the rendering job
 pmng=$(zenity --list --title "After rendering is finished :" --radiolist  --column="Pick" --column="Action"  TRUE "Do Nothing" FALSE "Put to sleep" FALSE "Shutdown");
 
-sets a variable to choose animation or single frame
+#sets a variable to choose animation or single frame
 anm=$(zenity --list --title "Single frame or Animation :" --radiolist  --column="Pick" --column="Action"  TRUE "Single frame" FALSE "Animation");
 
 
 if [[ $anm == *"Animation"* ]]
 then
 	rndtype="-a";
-else	
+else
 	rndtype="-f 1";
 fi
 
@@ -35,22 +35,22 @@ then
 pass=$(zenity --password --title "Super User Password")
 fi
 
-cd $path
+cd "$path" || exit
 
-f=$(ls *.blend | wc -l)
-x=($(ls *.blend))
+f=$(find *.blend -type f -print| wc -l)
+x=$(find *.blend -type f -print)
 
 
-if (for((i=0; i<$f; i++));do
-    echo "# ${x[i]} \n\ $((i+1)) of $f" 
-    g=${x[i]}    
-    $executable -b $g -o $savfolder/$g -F $imgtype -x 1 $rndtype
+if (for g in $x;do
+    printf"# ${x[i]}\n\ $((i+1)) of $f"
+    "$executable" -b "$g" -o "$savfolder/$g" -F PNG -x 1 $rndtype;
     echo "$(( ((i+1) * 100) / f ))"
     sleep 0.1
-    done | zenity --progress --title="Rendering" --percentage=0 --auto-close --auto-kill)
+  done  | zenity --progress --title="Rendering" --percentage=0 --auto-close --auto-kill)
+
 then
-    zenity --notification   --timeout=2 --window-icon="info" --text="Renders completed successfully!"&
-    play ~/Path/to/Sound/Library/sucess.wav
+  zenity --notification   --timeout=2 --window-icon="info" --text="Renders completed successfully!"&
+  play ~/Path/to/Sound/Library/sucess.wav
 else
     zenity --notification  --timeout=2 --window-icon="error" --text "Something went wrong!"&
     play ~/Path/to/Sound/Library/error.wav
@@ -71,7 +71,7 @@ then
     echo $pass | sudo -S pm-suspend
 else
     zenity --info  --window-icon="error" --timeout=2  --text="Shutting Down"
-    echo $pass | sudo -S halt -p   
+    echo $pass | sudo -S halt -p
 fi
 
 #end time of script and total time
