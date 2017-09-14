@@ -1,4 +1,4 @@
-#!/bin/bash -xv
+#!/bin/bash
 
 #time the script started
 startTime=$(date +%s)
@@ -42,8 +42,8 @@ x=$(find *.blend -type f -print)
 
 
 if (for g in $x;do
-    printf"# ${x[i]}\n\ $((i+1)) of $f"
-    "$executable" -b "$g" -o "$savfolder/$g" -F PNG -x 1 $rndtype;
+    printf"# $g\n\ $((g+1)) of $f"
+    "$executable" -b "$g" -o "$savfolder/$g" -F $imgtype -x 1 $rndtype;
     echo "$(( ((i+1) * 100) / f ))"
     sleep 0.1
   done  | zenity --progress --title="Rendering" --percentage=0 --auto-close --auto-kill)
