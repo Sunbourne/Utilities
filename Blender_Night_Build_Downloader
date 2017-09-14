@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 #a script that automaticaly (or semi-autoamtically) downloads Blender night builds.
 
@@ -17,4 +17,3 @@ rm -r  $HOME/Downloads/builder.blender.org/
 
 #Displays a message
 zenity --notification   --timeout=2 --display=:0.0 --window-icon="info" --text="Latest Blender Build downloaded and installed sucessfully!"
-
