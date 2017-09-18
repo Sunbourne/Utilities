@@ -1,4 +1,4 @@
-#!/bin/bash -xv
+#!/bin/bash
 
 #time the script started
 startTime=$(date +%s)
@@ -13,20 +13,20 @@ path=$(zenity --file-selection --directory --title="Select Folder to be Rendered
 savfolder=$(zenity --file-selection --directory --save --title="Select Folder where the renders should be saved" --confirm-overwrite)
 
 #sets the file extension for the resulting image
-imgtype=$(zenity --list --title "Image Format" --radiolist  --column="Pick" --column="Extension" TRUE "PNG" FALSE "EXR" FALSE "TIFF" FALSE "TGA" FALSE "JPG" FALSE "BMP");
+imgtype=$(zenity --list --title "Image Format" --radiolist  --column="Pick" --column="Extension" TRUE "PNG" FALSE "EXR" FALSE "TIFF" FALSE "TGA" FALSE "JPEG" FALSE "BMP")
 
 #sets the action to be taken after finishing the rendering job
-pmng=$(zenity --list --title "After rendering is finished :" --radiolist  --column="Pick" --column="Action"  TRUE "Do Nothing" FALSE "Put to sleep" FALSE "Shutdown");
+pmng=$(zenity --list --title "After rendering is finished :" --radiolist  --column="Pick" --column="Action"  TRUE "Do Nothing" FALSE "Put to sleep" FALSE "Shutdown")
 
 #sets a variable to choose animation or single frame
-anm=$(zenity --list --title "Single frame or Animation :" --radiolist  --column="Pick" --column="Action"  TRUE "Single frame" FALSE "Animation");
+anm=$(zenity --list --title "Single frame or Animation :" --radiolist  --column="Pick" --column="Action"  TRUE "Single frame" FALSE "Animation")
 
 
 if [[ $anm == *"Animation"* ]]
 then
-	rndtype="-a";
+	rndtype="-a"
 else
-	rndtype="-f 1";
+	rndtype="-f 1"
 fi
 
 if [[ $pmng != "Do Nothing" ]]
@@ -37,57 +37,57 @@ fi
 
 cd "$path" || exit
 
-f=$(find *.blend -type f -print| wc -l)
-x=$(find *.blend -type f -print)
-
-
-if (for g in $x;do
-    printf"# ${x[i]}\n\ $((g+1)) of $f"
-    "$executable" -b "$g" -o "$savfolder/$g" -F $imgtype -x 1 $rndtype;
-    echo "$(( ((g+1) * 100) / f ))"
-    sleep 0.1
-  done  | zenity --progress --title="Rendering" --percentage=0 --auto-close --auto-kill)
-
+if (for g in *.blend;do
+	f=$(find -- *.blend -type f -print | grep -c blend)
+	r=$(find "$savfolder" -type f -print | grep -ic "$imgtype")
+  echo	-e "# Rendering file: $g --- $((f-r)) files remaining"
+	sleep 0.1
+  "$executable" -b "$g" -o "$savfolder/$g" -F "$imgtype" -x 1 $rndtype
+	done | zenity --progress --title="Rendering" --percentage=0 --auto-close --auto-kill)
 then
   zenity --notification   --timeout=2 --window-icon="info" --text="Renders completed successfully!"&
 	# You should change this accordingly to your liking
-  play /usr/share/sounds/LinuxMint/stereo/desktop-logout.ogg
+  play "/usr/share/sounds/LinuxMint/stereo/desktop-logout.ogg"
 else
-    zenity --notification  --timeout=2 --window-icon="error" --text "Something went wrong!"&
-		# You should change this accordingly to your liking
-    play /usr/share/sounds/LinuxMint/stereo/phone-incoming-call.ogg
+  zenity --notification  --timeout=2 --window-icon="error" --text "Something went wrong!"&
+	# You should change this accordingly to your liking
+  play "/usr/share/sounds/LinuxMint/stereo/phone-incoming-call.ogg"
 fi
 
 #Rename files by removing the ".blend####" extension
-cd $savfolder
-imgtype=${imgtype,,}
-for i in *.$imgtype;do mv $i ${i//.\blend/_};done;
+cd "$savfolder" || exit
+imgtype="${imgtype,,}" #Convets extension to lower case
+for i in *.$imgtype
+	do
+		mv "$i" "${i//.\blend/_}"
+	done
 
-#Actions after finishing the rendering job
+#Actions after finishing the rendering jobs
 if [[ $pmng == "Do Nothing" ]]
 then
-    break
+    :
 elif [[ $pmng == "Put to sleep" ]]
 then
     zenity --info  --window-icon="error" --timeout=2  --text="Going to Sleep! Zzzzzz!"
-    echo $pass | sudo -S pm-suspend
+    echo "$pass" | sudo -S pm-suspend
 else
     zenity --info  --window-icon="error" --timeout=2  --text="Shutting Down"
-    echo $pass | sudo -S halt -p
+    echo "$pass" | sudo -S halt -p
 fi
 
 #end time of script and total time
 endTime=$(date +%s)
-totalTime=$(($endTime - $startTime))
+totalTime=$((endTime - startTime))
 timeInfo=$(date -u -d @$totalTime +%T)
 zenity --notification --timeout=2 --window-icon="info" --text="Total time of Render Jobs: $timeInfo"
+
 
 #Create a log file
 date +%A" "%d" "%B%n%H:%M:%S > Statistics.txt
 echo "">> Statistics.txt
-echo "Rendered: $(ls *.$imgtype | wc -l) frames of $(ls $path | grep blend$ | wc -l) blend files" >> Statistics.txt
+echo "Rendered: $(find -- *."$imgtype" -type f | grep -c "$imgtype") frames of $(find "$path" blend -type f | grep -c blend) blend files" >> Statistics.txt
 echo "">> Statistics.txt
 echo "Total Render Time: $timeInfo" >> Statistics.txt
 echo "">> Statistics.txt
 echo "Image List:">> Statistics.txt
-echo "$(ls *.$imgtype)">> Statistics.txt
+ls -- *."$imgtype">> Statistics.txt
