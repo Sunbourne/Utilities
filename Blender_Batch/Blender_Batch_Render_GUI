@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -xv
 
 #time the script started
 startTime=$(date +%s)
@@ -42,18 +42,20 @@ x=$(find *.blend -type f -print)
 
 
 if (for g in $x;do
-    printf"# $g\n\ $((g+1)) of $f"
+    printf"# ${x[i]}\n\ $((g+1)) of $f"
     "$executable" -b "$g" -o "$savfolder/$g" -F $imgtype -x 1 $rndtype;
-    echo "$(( ((i+1) * 100) / f ))"
+    echo "$(( ((g+1) * 100) / f ))"
     sleep 0.1
   done  | zenity --progress --title="Rendering" --percentage=0 --auto-close --auto-kill)
 
 then
   zenity --notification   --timeout=2 --window-icon="info" --text="Renders completed successfully!"&
-  play ~/Path/to/Sound/Library/sucess.wav
+	# You should change this accordingly to your liking
+  play /usr/share/sounds/LinuxMint/stereo/desktop-logout.ogg
 else
     zenity --notification  --timeout=2 --window-icon="error" --text "Something went wrong!"&
-    play ~/Path/to/Sound/Library/error.wav
+		# You should change this accordingly to your liking
+    play /usr/share/sounds/LinuxMint/stereo/phone-incoming-call.ogg
 fi
 
 #Rename files by removing the ".blend####" extension
